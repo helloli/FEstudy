@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>真实展现</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    li {
+      list-style: none;
+      height: 100px;
+      border: 1px solid #ccc;
+      width: 660px;
+    }
+  </style>
+</head>
+<body>
+  <div style="height: 100px"></div>
+  <ul id="list">
+    <li id="1">1</li>
+    <li id="2">2</li>
+    <li id="3">3</li>
+    <li id="4">4</li>
+    <li id="5">5</li>
+    <li id="6">6</li>
+    <li id="7">7</li>
+    <li id="8">8</li>
+    <li id="9">9</li>
+    <li id="10">10</li>
+    <li id="11">11</li>
+    <li id="12">12</li>
+    <li id="13">13</li>
+    <li id="14">14</li>
+    <li id="15">15</li>
+    <li id="16">16</li>
+    <li id="17">17</li>
+    <li id="18">18</li>
+    <li id="19">19</li>
+    <li id="20">20</li>
+    <li id="21">21</li>
+    <li id="22">22</li>
+    <li id="23">23</li>
+    <li id="24">24</li>
+    <li id="25">25</li>
+    <li id="26">26</li>
+    <li id="27">27</li>
+    <li id="28">28</li>
+    <li id="29">29</li>
+    <li id="30">30</li>
+    <li id="31">31</li>
+    <li id="32">32</li>
+    <li id="33">33</li>
+    <li id="34">34</li>
+    <li id="35">35</li>
+    <li id="36">36</li>
+    <li id="37">37</li>
+    <li id="38">38</li>
+    <li id="39">39</li>
+    <li id="40">40</li>
+    <li id="41">41</li>
+    <li id="42">42</li>
+    <li id="43">43</li>
+    <li id="44">44</li>
+    <li id="45">45</li>
+    <li id="46">46</li>
+    <li id="47">47</li>
+    <li id="48">48</li>
+    <li id="49">49</li>
+    <li id="50">50</li>
+  </ul>
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+  <script>
+    /**
+     * 真实展现打点类
+     */
+    const RealShowDotter = function (els, onShow, showTime, intervalTime) {
+      this.els = els;
+      this.onShow = onShow;
+      this.showTime = showTime || 2000;
+      this.intervalTime = intervalTime || 200;
+      this.inSightList = [];
+    };
+
+    /**
+     * 判断元素是否在可视区域内
+     */
+    RealShowDotter.prototype.isInSight = function (el) {
+      let $el = $(el);
+      let top = $el.offset().top;
+      let bottom = top + $el.height();
+      let sightTop = $(document).scrollTop();
+      let sightBottom = sightTop + $(window).height();
+      return top >= sightTop && bottom <= sightBottom;
+    };
+
+    /**
+     * 寻找可视区域内的所有元素
+     */
+    RealShowDotter.prototype.findInSight = function () {
+      const result = [];
+      const self = this;
+      $(this.els).each(function () {
+        if (self.isInSight(this) && !$(this).attr('realshowed')) {
+          result.push({
+            el: this,
+            insertTime: +new Date
+          });
+        }
+      });
+      return result;
+    };
+
+    /**
+     * 启动器，定时判断是否该打点并更新可视区域元素列表
+     */
+    RealShowDotter.prototype.run = function () {
+      const self = this;
+      setInterval(function () {
+        let nowInSight = self.findInSight();
+        let newInSight = [];
+        nowInSight.forEach(function (nowObj) {
+          let flag = false;
+          self.inSightList.forEach(function (obj) {
+            if (obj.el === nowObj.el) {
+              if (nowObj.insertTime - obj.insertTime >= self.showTime) {
+                self.onShow && self.onShow(obj.el);
+                $(obj.el).attr('realshowed', 1);
+              } else {
+                newInSight.push(obj);
+              }
+              flag = true;
+            }
+          })
+          if (!flag) {
+            newInSight.push(nowObj);
+          }
+        });
+        self.inSightList = newInSight;
+      }, this.intervalTime);
+    };
+
+    const dotter = new RealShowDotter('li', function (el) {
+      console.log(el);
+    });
+
+    dotter.run();
+  </script>
+</body>
+</html>
