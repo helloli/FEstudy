@@ -8,6 +8,13 @@
       margin: 0;
       padding: 0;
     }
+    html {
+      height: 1000px;
+    }
+    ul {
+      height: 400px;
+      overflow: scroll;
+    }
     li {
       list-style: none;
       height: 100px;
@@ -75,11 +82,12 @@
     /**
      * 真实展现打点类
      */
-    const RealShowDotter = function (els, onShow, showTime, intervalTime) {
-      this.els = els;
-      this.onShow = onShow;
-      this.showTime = showTime || 2000;
-      this.intervalTime = intervalTime || 200;
+    const RealShowDotter = function (obj) {
+      this.wrap = obj.wrap || document;
+      this.els = obj.els;
+      this.onShow = obj.onShow;
+      this.showTime = obj.showTime || 2000;
+      this.intervalTime = obj.intervalTime || 200;
       this.inSightList = [];
     };
 
@@ -88,11 +96,21 @@
      */
     RealShowDotter.prototype.isInSight = function (el) {
       let $el = $(el);
+      let $wrap = $(this.wrap);
       let top = $el.offset().top;
       let bottom = top + $el.height();
       let sightTop = $(document).scrollTop();
       let sightBottom = sightTop + $(window).height();
-      return top >= sightTop && bottom <= sightBottom;
+
+      let inVision = top >= sightTop && bottom <= sightBottom;
+      if (this.wrap === document) {
+        return inVision;
+      } else {
+        let wrapTop = $wrap.offset().top;
+        let wrapBottom = wrapTop + $wrap.height();
+        let inWrapVision = top >= wrapTop && bottom <= wrapBottom;
+        return inVision && inWrapVision;
+      }
     };
 
     /**
@@ -141,8 +159,12 @@
       }, this.intervalTime);
     };
 
-    const dotter = new RealShowDotter('li', function (el) {
-      console.log(el);
+    const dotter = new RealShowDotter({
+      wrap: 'ul',
+      els: 'li',
+      onShow: function (el) {
+        console.log(el);
+      }
     });
 
     dotter.run();
